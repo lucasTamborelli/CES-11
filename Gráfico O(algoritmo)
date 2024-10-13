@@ -1,0 +1,50 @@
+import math
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy as sp
+from scipy.optimize import curve_fit
+f = open("DADOS.txt", "r")
+y= [] #tempo
+x= [] #entradas
+z= [] #comparações
+#Os dados devem estar na ordem tempo, entradas, compara ̧c~oes.
+for i, valor in enumerate(f.readlines()):
+v = float(valor.strip())
+if (i % 3 == 0):
+y.append(v)
+elif (i % 3 == 1):
+x.append(v)
+else:
+z.append(v)
+#Plotagem do gr ́afico de tempo por entradas
+plt.ylabel("Tempo")
+plt.xlabel("Entradas")
+plt.plot(x, y, color = "black")
+plt.title("Sort (Entradas x Tempo)")
+plt.show()
+#Plotagem do gráfico de comparaçõoes por entradas
+
+
+plt.ylabel("Compara ̧c~oes")
+plt.xlabel("Entradas")
+plt.plot(x, z, color = "black")
+plt.title("Sort (Entradas x Compara ̧c~oes)")
+plt.show()
+#Funcao modelo para complexidade
+def modelo_f(x, a,b, c):
+return a*x*(np.log(x))+x*b + c
+#popt: par^ametros  ́otimos
+#pcov: estimativa do erro
+popt, pcov = curve_fit(modelo_f, x, y, p0 =[1,1,1])
+a_opt, b_opt, c_opt = popt
+x_modelo = np.linspace(min(x), max(x), 100)
+y_modelo = modelo_f(x_modelo, a_opt, b_opt, c_opt)
+#Plotagem da funcao modelo com o primeiro gr ́afico
+plt.ylabel("Tempo")
+plt.xlabel("Entradas")
+plt.plot(x, y, '-o',markersize=2, color = "black", label = "Sort")
+plt.legend(loc = "upper left")
+plt.plot(x_modelo, y_modelo, color = "red", linestyle = "--", label = "n log(n)")
+plt.legend(loc = "upper left")
+plt.title("Sort x n.log(n)")
+plt.show()
