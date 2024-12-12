@@ -1,1 +1,171 @@
-/
+/* Lucas Guedes Tamborelli                 */
+/* Turma  T28.4                            */
+/* Exercício 4:  Fila de Prioridade        */
+/*                                         */
+/* Programa compilado com CLion 2023.3.4   */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct tarefa{
+    int importancia;
+    char descricao[42];
+};typedef struct tarefa tipo_tarefa;
+
+
+struct filaPrioridade{
+    tarefa *vetor;
+    int quantidade;
+    int tamanhoMax;
+};typedef struct filaPrioridade tipo_filaPrioridade;
+
+
+void inicializar (tipo_filaPrioridade *fila, int max){
+    fila->vetor = (tarefa*) malloc((fila->tamanhoMax +1)*sizeof(tarefa));
+    fila->quantidade= 0;
+    fila->tamanhoMax = max;
+    // aloca memoria, quant =0, e max;
+}
+
+void finalizar (tipo_filaPrioridade *fila){
+    free(fila->vetor);
+}
+
+bool filaCheia(tipo_filaPrioridade *fila){ //ref por ponteiro para nao precisar fazer copia
+    if (fila->quantidade == fila->tamanhoMax) return true;
+    else return false;
+}
+
+bool filaVazia(tipo_filaPrioridade *fila){
+    if (fila->quantidade == 0) return true;
+    else return false;
+}
+
+void removerMax(tipo_filaPrioridade *fila){
+    fila->vetor[fila->quantidade].importancia =0;
+    fila->quantidade--;
+    //vai na ulitma posicao, zera o ultimo e quant--
+}
+
+tipo_tarefa consultarMax(tipo_filaPrioridade *fila){
+    return fila->vetor[fila->quantidade];
+    // retorna a tarefa importancia max
+}
+
+//========INSERIR==========\\
+
+void inserir(tipo_filaPrioridade *fila, tipo_tarefa procurado){
+
+    if (fila->quantidade == 0) { //fila vazia
+        fila->vetor[1] = procurado;
+        fila->quantidade++;
+        return;
+    }
+
+    int inf=1;
+    int sup = fila->quantidade;
+    int med;
+
+    do{
+        med= (inf+sup)/2;
+        if (procurado.importancia < fila->vetor[med].importancia) sup = med-1;
+        else inf = med+1;
+
+
+    } while (sup >= inf);
+
+    if (procurado.importancia > fila->vetor[med].importancia) med++;
+    // se o vetor[med] < procurado entao o vetorm[med] nao shifta para a direita
+
+
+    for (int j = fila->quantidade; j>= med; j--)
+        fila->vetor[j + 1] = fila->vetor[j];
+
+    fila->vetor[med] = procurado;
+
+
+    // med é a posicao do elem 'pivo', shifta todos depois do med para a direita
+    // insere o novo e quant++
+
+    fila->quantidade++;
+}
+
+//===========MAIN==============\\
+
+int main(){
+    FILE *entrada;
+    FILE *saida;
+    entrada = fopen("entrada4.txt", "r");
+    saida = fopen("Lab4_Lucas_Guedes_Tamborelli.txt", "w");
+
+    int tamanhoMax=0;
+    char linha [72];
+    char mensagem[10];
+    tipo_filaPrioridade fila;
+    tipo_tarefa elemento;
+
+    for (int k = 0; k<5; k++) fgets(linha, 72, entrada); //ignora 5 linhas
+    fscanf(entrada, "%d ", &tamanhoMax);
+
+    inicializar(&fila, tamanhoMax);
+
+    for (int i = 0; i<3; i++) fgets(linha, 72, entrada);
+
+    fprintf(saida,"Agenda Eletronica - Exemplo de arquivo de saida.\n"
+                                "Pode colocar qualquer texto no cabecalho.\n"
+                                "O cabecalho deve ter exatamente 5 linhas. \n"
+                                "Neste caso, a quinta linha estah em branco  :-)\n\n"
+                                "--------------------------------------------------\n"
+                                "RESPOSTAS DAS CONSULTAS\n"
+                                "--------------------------------------------------\n");
+
+    do{
+        fscanf(entrada, "%s ", mensagem);
+
+        if (strcmp(mensagem, "PROXIMA") == 0){
+
+            //se estiver vazia
+            if ( filaVazia(&fila) )  fprintf(saida,"AVISO      Nao ha tarefas na agenda  :-)\n");
+
+            else{
+                // encontra o ultimo elemento, printa, retira e quant--
+                fprintf(saida,"%2d         %s", consultarMax(&fila).importancia, consultarMax(&fila).descricao);
+                removerMax(&fila);
+            }
+        }
+
+        else if (strcmp(mensagem, "NOVA") == 0){
+
+            // se estiver cheia
+            if (filaCheia(&fila))  fprintf(saida,"ERRO       Agenda cheia. Impossivel inserir.\n");
+
+            else{
+                // le o numero, procura a posicao no vetor insere na posicao e quant++
+                fscanf(entrada, "%d ", &elemento.importancia);
+                fgets( elemento.descricao, 42, entrada);
+                inserir(&fila, elemento);
+            }
+        }
+
+    } while (strcmp(mensagem, "FIM") != 0);
+    //le o arquivo ate que a mensagem de Fim apareca
+
+
+    fprintf(saida,"\n--------------------------------------------------\n"
+                                "FICA PARA O DIA SEGUINTE\n"
+                                "--------------------------------------------------\n");
+
+    if (filaVazia(&fila))  fprintf(saida,"Agenda vazia! Nao restam tarefas para o dia seguinte.\n");
+
+    else {
+        do {
+            fprintf(saida,"%2d         %s", consultarMax(&fila).importancia, consultarMax(&fila).descricao);
+            removerMax(&fila);
+
+        } while (!filaVazia(&fila));
+    }
+    finalizar(&fila);
+
+    return 0;
+}
